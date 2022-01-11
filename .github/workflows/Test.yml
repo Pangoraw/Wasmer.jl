@@ -1,0 +1,16 @@
+name: "Wasmer.jl test suite"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: 1.6
+      - uses: julia-actions/julia-runtest@v1

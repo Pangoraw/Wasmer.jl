@@ -18,27 +18,23 @@ latest_release(repo; auth) = reduce(releases(repo; auth)[1]) do releaseA, releas
 end
 
 function make_artifacts(dir)
-    release = latest_release("bytecodealliance/wasmtime"; auth=gh_auth)
+    release = latest_release("wasmerio/wasmer"; auth=gh_auth)
     release_version = VersionNumber(release.tag_name)
 
-    platforms = [
-        Platform("aarch64", "linux"; libc="glibc"),
-        Platform("x86_64", "linux"; libc="glibc"),
-        Platform("x86_64", "macos"),
-        Platform("aarch64", "macos"),
-    ]
+    platforms = Dict([
+        "wasmer-linux-amd64.tar.gz" => Platform("x86_64", "linux"; libc="glibc"),
+        "wasmer-linux-musl-amd64.tar.gz" => Platform("x86_64", "linux"; libc="musl"),
+        "wasmer-darwin-amd64.tar.gz" => Platform("x86_64", "macos"),
+        "wasmer-darwin-arm64.tar.gz" => Platform("aarch64", "macos"),
+   ])
 
-    tripletnolibc(platform) = replace(triplet(platform), "-gnu" => "")
-    wasmtime_asset_name(platform) =
-       replace("wasmtime-v$release_version-$(tripletnolibc(platform))-c-api.tar.xz",
-	       "apple-darwin" => "macos")
-    asset_names = wasmtime_asset_name.(platforms)
-
-    assets = filter(asset -> asset["name"] ∈ asset_names, release.assets)
+    assets = filter(asset -> haskey(platforms, asset["name"]), release.assets)
     artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
 
-    for (platform, asset) in zip(platforms, assets)
-	@info "Downloading $(asset["browser_download_url"]) for $platform"
+    for asset in assets
+        platform = platforms[asset["name"]]
+
+        @info "Downloading $(asset["browser_download_url"]) for $platform"
         archive_location = joinpath(dir, asset["name"])
         download_url = asset["browser_download_url"]
         Downloads.download(download_url, archive_location;
@@ -52,10 +48,10 @@ function make_artifacts(dir)
         download_hash = open(archive_location, "r") do f
             bytes2hex(sha256(f))
         end
-        bind_artifact!(artifacts_toml, "libwasmtime", artifact_hash; platform, force=true, download_info=[
+        bind_artifact!(artifacts_toml, "libwasmer", artifact_hash; platform, force=true, download_info=[
             (download_url, download_hash)
         ])
-	@info "done $platform"
+        @info "done $platform"
     end
 end
 

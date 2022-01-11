@@ -22,5 +22,3 @@ using Test
 
     @test res == Int32(3)
 end
-
-include("./wasi.jl")

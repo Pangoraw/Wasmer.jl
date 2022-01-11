@@ -18,10 +18,8 @@ function get_libwasmer_location()
     artifact_info === nothing && return nothing
 
     parent_path = artifact_path(Base.SHA1(artifact_info["git-tree-sha1"]))
-    child_folder = readdir(parent_path)[1]
     return joinpath(
         parent_path,
-        child_folder,
         "lib/libwasmer"
     )
 end

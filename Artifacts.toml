@@ -1,0 +1,43 @@
+[[libwasmer]]
+arch = "aarch64"
+git-tree-sha1 = "e590d018878dafe78070d121ce9edd6397c6c06b"
+libc = "glibc"
+os = "linux"
+
+    [[libwasmer.download]]
+    sha256 = "b9aaa5546d2d86b63f19a4194a1bebc04c785978390e4b28703fcf8a20d73ead"
+    url = "https://github.com/wasmerio/wasmer/releases/download/2.1.1/wasmer-linux-amd64.tar.gz"
+[[libwasmer]]
+arch = "x86_64"
+git-tree-sha1 = "5ceb1ae091a3276b268e30bbeed543ee59770d26"
+os = "macos"
+
+    [[libwasmer.download]]
+    sha256 = "9affa419f9b4416acf128c549e54ec3c1868f3c3504055e9796396edf4421893"
+    url = "https://github.com/wasmerio/wasmer/releases/download/2.1.1/wasmer-darwin-amd64.tar.gz"
+[[libwasmer]]
+arch = "aarch64"
+git-tree-sha1 = "60fe6c2bcc0f09adf9fe224b7ed3bd17ea76d927"
+os = "macos"
+
+    [[libwasmer.download]]
+    sha256 = "e1a1f669bc75a2661221f52450cfb127570843313392e6f2a8ab34b946d3b870"
+    url = "https://github.com/wasmerio/wasmer/releases/download/2.1.1/wasmer-darwin-arm64.tar.gz"
+[[libwasmer]]
+arch = "x86_64"
+git-tree-sha1 = "e590d018878dafe78070d121ce9edd6397c6c06b"
+libc = "glibc"
+os = "linux"
+
+    [[libwasmer.download]]
+    sha256 = "b9aaa5546d2d86b63f19a4194a1bebc04c785978390e4b28703fcf8a20d73ead"
+    url = "https://github.com/wasmerio/wasmer/releases/download/2.1.1/wasmer-linux-amd64.tar.gz"
+[[libwasmer]]
+arch = "x86_64"
+git-tree-sha1 = "3d91b3d2a9b9a38d7e5b7511c7578263d7a810be"
+libc = "musl"
+os = "linux"
+
+    [[libwasmer.download]]
+    sha256 = "239fb6bf9d6989bbea8e1a758ed6bed2deaa9cc01954f7a472f32868c7eee70c"
+    url = "https://github.com/wasmerio/wasmer/releases/download/2.1.1/wasmer-linux-musl-amd64.tar.gz"
