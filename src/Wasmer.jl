@@ -9,9 +9,9 @@ include("./val_t.jl")
 include("./engine.jl")
 include("./store.jl")
 include("./module.jl")
-include("./wasi.jl")
 include("./wat2wasm.jl")
 include("./instance.jl")
+include("./wasi.jl")
 
 export WasmEngine,
     WasmMemory,
@@ -24,6 +24,9 @@ export WasmEngine,
     imports,
     WasmImports,
     WasmFunc,
+    WasiEnv,
+    WasiConfig,
+    WasiPipe,
     @wat_str
 
 end # module

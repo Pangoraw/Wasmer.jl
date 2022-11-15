@@ -1,19 +1,21 @@
 using Clang.Generators
 using Clang.LibClang.Clang_jll
 
-cd(@__DIR__)
+# cd(@__DIR__)
 
 # Location of the extracted wasmer.tar.gz
-wasmer_location = joinpath(get(ENV, "WASMER_LOCATION", "../wasmer"), "lib/c-api/")
+wasmer_location = joinpath(get(ENV, "WASMER_LOCATION", "../../wasmer"),)
 
 options = load_options(joinpath(@__DIR__, "generator.toml"))
 
 # add compiler flags
 args = get_default_args()
-push!(args, "-I" * wasmer_location)
+c_api_dir = joinpath(@__DIR__, "../../wasmer/lib/c-api/")
+push!(args, "-I" * c_api_dir)
 
 headers = [
-    joinpath(wasmer_location, "../../target/release/build/wasmer-c-api-56a33427fae3bc8b/out/wasmer.h"),
+    # ../../wasmer/lib/c-api/wasm.h",
+    joinpath(@__DIR__, "../..", "wasmer/target/release/build/wasmer-c-api-515aff902b3d4049/out/wasmer.h"),
 ]
 
 # create context

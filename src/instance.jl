@@ -116,6 +116,13 @@ function (wasm_export::WasmExport)(args...)
     wasm_export.wasm_extern(args...)
 end
 
+function Base.unsafe_convert(::Type{Ptr{ wasm_memory_t }}, wasm_export::WasmExport)
+    wasm_extern_ptr = wasm_export.wasm_extern.wasm_extern_ptr
+    wasm_externkind = wasm_externtype_kind(wasm_extern_ptr)
+    @assert wasm_externkind == WASM_EXTERN_MEMORY
+    wasm_extern_as_memory(wasm_extern_ptr)
+end
+
 mutable struct WasmExports
     wasm_instance::WasmInstance
     wasm_exports::Vector{WasmExport}

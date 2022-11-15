@@ -1,7 +1,9 @@
 using Wasmer
 using Test
 
-@testset "" begin
+include("./wasi.jl")
+
+@testset "Default call" begin
     engine = WasmEngine()
     store = WasmStore(engine)
     code = wat"""

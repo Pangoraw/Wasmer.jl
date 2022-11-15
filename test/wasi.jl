@@ -3,6 +3,7 @@ using Wasmer
 using Test
 using Downloads
 
+@testset "Wasi - cowsay" begin
 mktempdir() do tmp_dir
     # TODO: Find a better way to provide the files
     location = joinpath(tmp_dir, "cowsay.wasm")
@@ -11,6 +12,7 @@ mktempdir() do tmp_dir
         location,
     )
 
+    # location = "./tmp/cowsay.wasm"
     wasm_code = read(location) |> Wasmer.WasmVec
 
     engine = WasmEngine()
@@ -19,20 +21,40 @@ mktempdir() do tmp_dir
 
     msg = "Meuuuh!"
 
-    wasi_config = Wasmer.WasiConfig("wasi_unstable")
-    Wasmer.wasi_config_inherit_stderr(wasi_config)
-    Wasmer.wasi_config_inherit_stdin(wasi_config)
-    Wasmer.wasi_config_capture_stdout(wasi_config)
+    wasi_config = WasiConfig("wasi_unstable")
 
-    env = Wasmer.WasiEnv(wasi_config)
+    wstdout, wstderr, wstdin = WasiPipe(), WasiPipe(), WasiPipe(blocking=false)
+    Wasmer.override_stderr!(wasi_config, wstderr)
+    Wasmer.override_stdout!(wasi_config, wstdout)
+    Wasmer.override_stdin!(wasi_config, wstdin)
 
+    env = WasiEnv(store, wasi_config)
     imports = Wasmer.get_imports(store, wasm_module, env)
+
     instance = WasmInstance(store, wasm_module, imports)
+    exports_ = exports(instance)
+
+    memory = exports_.memory
+    Wasmer.set_memory!(env, memory)
+
+    Wasmer.write(wstdin, msg * "\n")
 
     exports(instance)._start()
 
-    buffer = Wasmer.wasi_env_read_stdout(env, 512)
-    msg = buffer .|> Char |> join |> Text
+    result = Wasmer.read(wstdout, String)
 
-    @info "WASI worked" msg
+    expected = raw"""
+     _________
+    < Meuuuh! >
+     ---------
+            \   ^__^
+             \  (oo)\_______
+                (__)\       )\/\
+                   ||----w |
+                    ||     ||
+    """
+
+    @test length(result) == length(expected)
+    @test result == expected
+end
 end

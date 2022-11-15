@@ -100,7 +100,7 @@ function wasm_engine_delete(arg1)
     ccall((:wasm_engine_delete, libwasmer), Cvoid, (Ptr{wasm_engine_t},), arg1)
 end
 
-# no prototype is found for this function at wasm.h:136:36, please use with caution
+# no prototype is found for this function at wasm.h:140:36, please use with caution
 function wasm_engine_new()
     ccall((:wasm_engine_new, libwasmer), Ptr{wasm_engine_t}, ())
 end
@@ -1387,37 +1387,37 @@ function wasm_instance_exports(arg1, out)
     ccall((:wasm_instance_exports, libwasmer), Cvoid, (Ptr{wasm_instance_t}, Ptr{wasm_extern_vec_t}), arg1, out)
 end
 
-# no prototype is found for this function at wasm.h:537:35, please use with caution
+# no prototype is found for this function at wasm.h:541:35, please use with caution
 function wasm_valtype_new_i32()
     ccall((:wasm_valtype_new_i32, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:540:35, please use with caution
+# no prototype is found for this function at wasm.h:544:35, please use with caution
 function wasm_valtype_new_i64()
     ccall((:wasm_valtype_new_i64, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:543:35, please use with caution
+# no prototype is found for this function at wasm.h:547:35, please use with caution
 function wasm_valtype_new_f32()
     ccall((:wasm_valtype_new_f32, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:546:35, please use with caution
+# no prototype is found for this function at wasm.h:550:35, please use with caution
 function wasm_valtype_new_f64()
     ccall((:wasm_valtype_new_f64, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:550:35, please use with caution
+# no prototype is found for this function at wasm.h:554:35, please use with caution
 function wasm_valtype_new_anyref()
     ccall((:wasm_valtype_new_anyref, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:553:35, please use with caution
+# no prototype is found for this function at wasm.h:557:35, please use with caution
 function wasm_valtype_new_funcref()
     ccall((:wasm_valtype_new_funcref, libwasmer), Ptr{wasm_valtype_t}, ())
 end
 
-# no prototype is found for this function at wasm.h:560:36, please use with caution
+# no prototype is found for this function at wasm.h:564:36, please use with caution
 function wasm_functype_new_0_0()
     ccall((:wasm_functype_new_0_0, libwasmer), Ptr{wasm_functype_t}, ())
 end
@@ -1479,6 +1479,8 @@ end
     LATEST = 0
     SNAPSHOT0 = 1
     SNAPSHOT1 = 2
+    WASIX32V1 = 3
+    WASIX64V1 = 4
 end
 
 @cenum wasmer_compiler_t::UInt32 begin
@@ -1489,8 +1491,6 @@ end
 
 @cenum wasmer_engine_t::UInt32 begin
     UNIVERSAL = 0
-    DYLIB = 1
-    STATICLIB = 2
 end
 
 @cenum wasmer_parser_operator_t::UInt32 begin
@@ -2007,7 +2007,26 @@ end
     F64x2ConvertLowI32x4U = 510
     I32x4TruncSatF64x2SZero = 511
     I32x4TruncSatF64x2UZero = 512
+    I8x16RelaxedSwizzle = 513
+    I32x4RelaxedTruncSatF32x4S = 514
+    I32x4RelaxedTruncSatF32x4U = 515
+    I32x4RelaxedTruncSatF64x2SZero = 516
+    I32x4RelaxedTruncSatF64x2UZero = 517
+    F32x4Fma = 518
+    F32x4Fms = 519
+    F64x2Fma = 520
+    F64x2Fms = 521
+    I8x16LaneSelect = 522
+    I16x8LaneSelect = 523
+    I32x4LaneSelect = 524
+    I64x2LaneSelect = 525
+    F32x4RelaxedMin = 526
+    F32x4RelaxedMax = 527
+    F64x2RelaxedMin = 528
+    F64x2RelaxedMax = 529
 end
+
+mutable struct Arc_Mutex_WasiPipeDataWithDestructor end
 
 mutable struct wasi_config_t end
 
@@ -2027,60 +2046,112 @@ mutable struct wasmer_target_t end
 
 mutable struct wasmer_triple_t end
 
+# typedef int64_t ( * WasiConsoleIoReadCallback ) ( const void * , char * , uintptr_t )
+const WasiConsoleIoReadCallback = Ptr{Cvoid}
+
+# typedef int64_t ( * WasiConsoleIoWriteCallback ) ( const void * , const char * , uintptr_t , bool )
+const WasiConsoleIoWriteCallback = Ptr{Cvoid}
+
+# typedef int64_t ( * WasiConsoleIoSeekCallback ) ( const void * , char , int64_t )
+const WasiConsoleIoSeekCallback = Ptr{Cvoid}
+
+struct wasi_pipe_t
+    read::WasiConsoleIoReadCallback
+    write::WasiConsoleIoWriteCallback
+    seek::WasiConsoleIoSeekCallback
+    data::Ptr{Arc_Mutex_WasiPipeDataWithDestructor}
+end
+
+mutable struct wasi_filesystem_t
+    ptr::Cstring
+    size::Csize_t
+end
+
 mutable struct wasmer_named_extern_vec_t
     size::Csize_t
     data::Ptr{Ptr{wasmer_named_extern_t}}
 end
 
+# typedef int64_t ( * WasiConsoleIoEnvDestructor ) ( const void * )
+const WasiConsoleIoEnvDestructor = Ptr{Cvoid}
+
+struct FunctionCEnv
+    inner::Ptr{Cvoid}
+end
+
+mutable struct wasmer_funcenv_t
+    inner::FunctionCEnv
+end
+
 # typedef uint64_t ( * wasmer_metering_cost_function_t ) ( enum wasmer_parser_operator_t wasm_operator )
 const wasmer_metering_cost_function_t = Ptr{Cvoid}
 
-function wasi_config_arg(config, arg)
-    ccall((:wasi_config_arg, libwasmer), Cvoid, (Ptr{wasi_config_t}, Cstring), config, arg)
+function wasi_config_arg(wasi_config, arg)
+    ccall((:wasi_config_arg, libwasmer), Cvoid, (Ptr{wasi_config_t}, Cstring), wasi_config, arg)
 end
 
-function wasi_config_capture_stderr(config)
-    ccall((:wasi_config_capture_stderr, libwasmer), Cvoid, (Ptr{wasi_config_t},), config)
+function wasi_config_capture_stderr(wasi_config)
+    ccall((:wasi_config_capture_stderr, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
 end
 
-function wasi_config_capture_stdout(config)
-    ccall((:wasi_config_capture_stdout, libwasmer), Cvoid, (Ptr{wasi_config_t},), config)
+function wasi_config_capture_stdin(wasi_config)
+    ccall((:wasi_config_capture_stdin, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
 end
 
-function wasi_config_env(config, key, value)
-    ccall((:wasi_config_env, libwasmer), Cvoid, (Ptr{wasi_config_t}, Cstring, Cstring), config, key, value)
+function wasi_config_capture_stdout(wasi_config)
+    ccall((:wasi_config_capture_stdout, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
 end
 
-function wasi_config_inherit_stderr(config)
-    ccall((:wasi_config_inherit_stderr, libwasmer), Cvoid, (Ptr{wasi_config_t},), config)
+function wasi_config_env(wasi_config, key, value)
+    ccall((:wasi_config_env, libwasmer), Cvoid, (Ptr{wasi_config_t}, Cstring, Cstring), wasi_config, key, value)
 end
 
-function wasi_config_inherit_stdin(config)
-    ccall((:wasi_config_inherit_stdin, libwasmer), Cvoid, (Ptr{wasi_config_t},), config)
+function wasi_config_inherit_stderr(wasi_config)
+    ccall((:wasi_config_inherit_stderr, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
 end
 
-function wasi_config_inherit_stdout(config)
-    ccall((:wasi_config_inherit_stdout, libwasmer), Cvoid, (Ptr{wasi_config_t},), config)
+function wasi_config_inherit_stdin(wasi_config)
+    ccall((:wasi_config_inherit_stdin, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
 end
 
-function wasi_config_mapdir(config, alias, dir)
-    ccall((:wasi_config_mapdir, libwasmer), Bool, (Ptr{wasi_config_t}, Cstring, Cstring), config, alias, dir)
+function wasi_config_inherit_stdout(wasi_config)
+    ccall((:wasi_config_inherit_stdout, libwasmer), Cvoid, (Ptr{wasi_config_t},), wasi_config)
+end
+
+function wasi_config_mapdir(wasi_config, alias, dir)
+    ccall((:wasi_config_mapdir, libwasmer), Bool, (Ptr{wasi_config_t}, Cstring, Cstring), wasi_config, alias, dir)
 end
 
 function wasi_config_new(program_name)
     ccall((:wasi_config_new, libwasmer), Ptr{wasi_config_t}, (Cstring,), program_name)
 end
 
-function wasi_config_preopen_dir(config, dir)
-    ccall((:wasi_config_preopen_dir, libwasmer), Bool, (Ptr{wasi_config_t}, Cstring), config, dir)
+function wasi_config_overwrite_stderr(config_overwrite, stderr_overwrite)
+    ccall((:wasi_config_overwrite_stderr, libwasmer), Cvoid, (Ptr{wasi_config_t}, Ptr{wasi_pipe_t}), config_overwrite, stderr_overwrite)
+end
+
+function wasi_config_overwrite_stdin(config_overwrite, stdin_overwrite)
+    ccall((:wasi_config_overwrite_stdin, libwasmer), Cvoid, (Ptr{wasi_config_t}, Ptr{wasi_pipe_t}), config_overwrite, stdin_overwrite)
+end
+
+function wasi_config_overwrite_stdout(config_overwrite, stdout_overwrite)
+    ccall((:wasi_config_overwrite_stdout, libwasmer), Cvoid, (Ptr{wasi_config_t}, Ptr{wasi_pipe_t}), config_overwrite, stdout_overwrite)
+end
+
+function wasi_config_preopen_dir(wasi_config, dir)
+    ccall((:wasi_config_preopen_dir, libwasmer), Bool, (Ptr{wasi_config_t}, Cstring), wasi_config, dir)
 end
 
 function wasi_env_delete(_state)
     ccall((:wasi_env_delete, libwasmer), Cvoid, (Ptr{wasi_env_t},), _state)
 end
 
-function wasi_env_new(config)
-    ccall((:wasi_env_new, libwasmer), Ptr{wasi_env_t}, (Ptr{wasi_config_t},), config)
+function wasi_env_initialize_instance(wasi_env, store, instance)
+    ccall((:wasi_env_initialize_instance, libwasmer), Bool, (Ptr{wasi_env_t}, Ptr{wasm_store_t}, Ptr{wasm_instance_t}), wasi_env, store, instance)
+end
+
+function wasi_env_new(store, wasi_config)
+    ccall((:wasi_env_new, libwasmer), Ptr{wasi_env_t}, (Ptr{wasm_store_t}, Ptr{wasi_config_t}), store, wasi_config)
 end
 
 function wasi_env_read_stderr(env, buffer, buffer_len)
@@ -2091,20 +2162,84 @@ function wasi_env_read_stdout(env, buffer, buffer_len)
     ccall((:wasi_env_read_stdout, libwasmer), intptr_t, (Ptr{wasi_env_t}, Cstring, Csize_t), env, buffer, buffer_len)
 end
 
-function wasi_get_imports(store, _module, wasi_env, imports)
-    ccall((:wasi_get_imports, libwasmer), Bool, (Ptr{wasm_store_t}, Ptr{wasm_module_t}, Ptr{wasi_env_t}, Ptr{wasm_extern_vec_t}), store, _module, wasi_env, imports)
+function wasi_env_set_memory(env, memory)
+    ccall((:wasi_env_set_memory, libwasmer), Cvoid, (Ptr{wasi_env_t}, Ptr{wasm_memory_t}), env, memory)
+end
+
+function wasi_env_with_filesystem(config, store, _module, fs, imports, package)
+    ccall((:wasi_env_with_filesystem, libwasmer), Ptr{wasi_env_t}, (Ptr{wasi_config_t}, Ptr{wasm_store_t}, Ptr{wasm_module_t}, Ptr{wasi_filesystem_t}, Ptr{wasm_extern_vec_t}, Cstring), config, store, _module, fs, imports, package)
+end
+
+function wasi_filesystem_delete(ptr)
+    ccall((:wasi_filesystem_delete, libwasmer), Cvoid, (Ptr{wasi_filesystem_t},), ptr)
+end
+
+function wasi_filesystem_init_static_memory(volume_bytes)
+    ccall((:wasi_filesystem_init_static_memory, libwasmer), Ptr{wasi_filesystem_t}, (Ptr{wasm_byte_vec_t},), volume_bytes)
+end
+
+function wasi_get_imports(_store, wasi_env, _module, imports)
+    ccall((:wasi_get_imports, libwasmer), Bool, (Ptr{wasm_store_t}, Ptr{wasi_env_t}, Ptr{wasm_module_t}, Ptr{wasm_extern_vec_t}), _store, wasi_env, _module, imports)
 end
 
 function wasi_get_start_function(instance)
     ccall((:wasi_get_start_function, libwasmer), Ptr{wasm_func_t}, (Ptr{wasm_instance_t},), instance)
 end
 
-function wasi_get_unordered_imports(store, _module, wasi_env, imports)
-    ccall((:wasi_get_unordered_imports, libwasmer), Bool, (Ptr{wasm_store_t}, Ptr{wasm_module_t}, Ptr{wasi_env_t}, Ptr{wasmer_named_extern_vec_t}), store, _module, wasi_env, imports)
+function wasi_get_unordered_imports(wasi_env, _module, imports)
+    ccall((:wasi_get_unordered_imports, libwasmer), Bool, (Ptr{wasi_env_t}, Ptr{wasm_module_t}, Ptr{wasmer_named_extern_vec_t}), wasi_env, _module, imports)
 end
 
 function wasi_get_wasi_version(_module)
     ccall((:wasi_get_wasi_version, libwasmer), wasi_version_t, (Ptr{wasm_module_t},), _module)
+end
+
+function wasi_pipe_delete(ptr)
+    ccall((:wasi_pipe_delete, libwasmer), Bool, (Ptr{wasi_pipe_t},), ptr)
+end
+
+function wasi_pipe_delete_str(buf)
+    ccall((:wasi_pipe_delete_str, libwasmer), Cvoid, (Cstring,), buf)
+end
+
+function wasi_pipe_flush(ptr)
+    ccall((:wasi_pipe_flush, libwasmer), Int64, (Ptr{wasi_pipe_t},), ptr)
+end
+
+function wasi_pipe_new(ptr_user)
+    ccall((:wasi_pipe_new, libwasmer), Ptr{wasi_pipe_t}, (Ptr{Ptr{wasi_pipe_t}},), ptr_user)
+end
+
+function wasi_pipe_new_blocking(ptr_user)
+    ccall((:wasi_pipe_new_blocking, libwasmer), Ptr{wasi_pipe_t}, (Ptr{Ptr{wasi_pipe_t}},), ptr_user)
+end
+
+function wasi_pipe_new_internal(read, write, seek, destructor, env_data, env_data_len)
+    ccall((:wasi_pipe_new_internal, libwasmer), Ptr{wasi_pipe_t}, (WasiConsoleIoReadCallback, WasiConsoleIoWriteCallback, WasiConsoleIoSeekCallback, WasiConsoleIoEnvDestructor, Ptr{Cvoid}, Csize_t), read, write, seek, destructor, env_data, env_data_len)
+end
+
+function wasi_pipe_new_null()
+    ccall((:wasi_pipe_new_null, libwasmer), Ptr{wasi_pipe_t}, ())
+end
+
+function wasi_pipe_read_bytes(ptr, buf, read)
+    ccall((:wasi_pipe_read_bytes, libwasmer), Int64, (Ptr{wasi_pipe_t}, Cstring, Csize_t), ptr, buf, read)
+end
+
+function wasi_pipe_read_str(ptr, buf)
+    ccall((:wasi_pipe_read_str, libwasmer), Int64, (Ptr{wasi_pipe_t}, Ptr{Cstring}), ptr, buf)
+end
+
+function wasi_pipe_seek(ptr, seek_dir, seek)
+    ccall((:wasi_pipe_seek, libwasmer), Int64, (Ptr{wasi_pipe_t}, Cchar, Int64), ptr, seek_dir, seek)
+end
+
+function wasi_pipe_write_bytes(ptr, buf, len)
+    ccall((:wasi_pipe_write_bytes, libwasmer), Int64, (Ptr{wasi_pipe_t}, Cstring, Csize_t), ptr, buf, len)
+end
+
+function wasi_pipe_write_str(ptr, buf)
+    ccall((:wasi_pipe_write_str, libwasmer), Int64, (Ptr{wasi_pipe_t}, Cstring), ptr, buf)
 end
 
 function wasm_config_canonicalize_nans(config, enable)
@@ -2185,6 +2320,14 @@ end
 
 function wasmer_features_threads(features, enable)
     ccall((:wasmer_features_threads, libwasmer), Bool, (Ptr{wasmer_features_t}, Bool), features, enable)
+end
+
+function wasmer_funcenv_delete(_funcenv)
+    ccall((:wasmer_funcenv_delete, libwasmer), Cvoid, (Ptr{wasmer_funcenv_t},), _funcenv)
+end
+
+function wasmer_funcenv_new(store, data)
+    ccall((:wasmer_funcenv_new, libwasmer), Ptr{wasmer_funcenv_t}, (Ptr{wasm_store_t}, Ptr{Cvoid}), store, data)
 end
 
 function wasmer_is_compiler_available(compiler)
@@ -2315,15 +2458,15 @@ function wat2wasm(wat, out)
     ccall((:wat2wasm, libwasmer), Cvoid, (Ptr{wasm_byte_vec_t}, Ptr{wasm_byte_vec_t}), wat, out)
 end
 
-const WASMER_VERSION = "2.1.1"
+const WASMER_VERSION = "3.0.0-rc.2"
 
-const WASMER_VERSION_MAJOR = 2
+const WASMER_VERSION_MAJOR = 3
 
-const WASMER_VERSION_MINOR = 1
+const WASMER_VERSION_MINOR = 0
 
-const WASMER_VERSION_PATCH = 1
+const WASMER_VERSION_PATCH = 0
 
-const WASMER_VERSION_PRE = ""
+const WASMER_VERSION_PRE = "rc.2"
 
 const wasm_name = wasm_byte_vec_t
 
