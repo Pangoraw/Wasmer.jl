@@ -9,7 +9,7 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [compat]
 CEnum = "0.4"
-julia = "1"
+julia = "1.7"
 
 [extras]
 Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
