@@ -1,5 +1,9 @@
 # Wasmer.jl
 
+> **Note**
+> Consider using [Wasmtime.jl](https://github.com/Pangoraw/Wasmtime.jl) instead.
+
+
 A Julia wrapper around the [wasmer runtime](https://wasmer.io) to run Web Assembly blobs and libraries from Julia.
 
 ## Example
